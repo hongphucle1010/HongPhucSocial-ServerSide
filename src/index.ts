@@ -1,8 +1,8 @@
 import express from "express";
-import {createServer} from "http";
+import { createServer } from "http";
 import path from "path";
-import {Server} from "socket.io";
-import {routes} from "./routes";
+import { Server } from "socket.io";
+import { routes } from "./routes";
 
 require("dotenv").config();
 
@@ -19,7 +19,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use("/", routes);
 
 server.listen(port, () => {
