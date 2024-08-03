@@ -9,10 +9,10 @@ require("dotenv").config();
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
-    connectionStateRecovery: {
-        maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
-        skipMiddlewares: true, // Skip the middleware check
-    },
+  connectionStateRecovery: {
+    maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
+    skipMiddlewares: true, // Skip the middleware check
+  },
 });
 
 const port = process.env.PORT || 3000;
@@ -23,5 +23,5 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/", routes);
 
 server.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
