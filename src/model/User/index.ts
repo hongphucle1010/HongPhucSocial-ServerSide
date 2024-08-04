@@ -4,6 +4,7 @@ interface CreateUser {
   username: string;
   email: string;
   password: string;
+  isAdmin?: boolean;
 }
 
 export async function createUser(user: CreateUser) {
@@ -26,9 +27,41 @@ export async function createUser(user: CreateUser) {
   }
 }
 
+export async function createAdminUser(user: CreateUser) {
+  if (!user.email || !user.username || !user.password) {
+    throw new Error("Missing required fields");
+  }
+  if (user.isAdmin === false) {
+    throw new Error("isAdmin must be true");
+  }
+
+  try {
+    return await prisma.user.create({
+      data: {
+        ...user,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+  } catch (e: any) {
+    if (e.code === "P2002") {
+      throw new Error("Username or email already exists");
+    }
+    throw e;
+  }
+}
+
 export async function getUserById(id: number) {
   return await prisma.user.findUnique({
     where: { id },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      isAdmin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
   });
 }
 

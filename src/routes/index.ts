@@ -1,13 +1,13 @@
 import express from "express";
-import { createUser, deleteUser } from "../model/User";
-
+import { routes as v1 } from "./v1";
 export const routes = express.Router();
 
 routes.get("/experiment", async (req, res) => {
-  const response = await deleteUser(7);
-  console.log(response);
+  const response = {};
   res.json(response);
 });
+
+routes.use("/v1", v1);
 
 routes.get("/*", (req, res) => {
   res.json({

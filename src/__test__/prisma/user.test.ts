@@ -6,6 +6,7 @@ import {
   getUserById,
 } from "../../model/User";
 import { prismaMock } from "../../singleton";
+import { isA } from "jest-mock-extended";
 
 describe("Create user", () => {
   it("should create a user", async () => {
@@ -18,6 +19,7 @@ describe("Create user", () => {
     const userResponse = {
       ...user,
       id: 1,
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -42,6 +44,7 @@ describe("Create user", () => {
     const userResponse = {
       ...user,
       id: 1,
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -63,6 +66,7 @@ describe("Find user", () => {
       username: "test",
       email: "test@test.vn",
       password: "test",
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -86,6 +90,7 @@ describe("Update user", () => {
     };
     const userResponse = {
       ...user,
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -119,6 +124,7 @@ describe("Delete user", () => {
       username: "test",
       email: "test@test.vn",
       password: "test",
+      isAdmin: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
