@@ -27,7 +27,7 @@
   },
   "type": "commonjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watch",
     "dummy": "node dummyTest.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc"
