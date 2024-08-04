@@ -13,6 +13,10 @@ export async function createPost(post: CreatePost) {
     return await prisma.post.create({
       data: {
         ...post,
+        authorId:
+          typeof post.authorId === "string"
+            ? parseInt(post.authorId)
+            : post.authorId,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -23,9 +27,16 @@ export async function createPost(post: CreatePost) {
 }
 
 export async function getPostById(id: number) {
-  return await prisma.post.findUnique({
-    where: { id },
-  });
+  try {
+    return await prisma.post.findUnique({
+      where: { id },
+    });
+  } catch (e: any) {
+    if (e.code === "P2025") {
+      throw new Error("Post not found");
+    }
+    throw e;
+  }
 }
 
 interface UpdatePost {
@@ -51,7 +62,14 @@ export async function updatePost(post: UpdatePost) {
 }
 
 export async function deletePost(id: number) {
-  return await prisma.post.delete({
-    where: { id },
-  });
+  try {
+    return await prisma.post.delete({
+      where: { id },
+    });
+  } catch (e: any) {
+    if (e.code === "P2025") {
+      throw new Error("Post not found");
+    }
+    throw e;
+  }
 }

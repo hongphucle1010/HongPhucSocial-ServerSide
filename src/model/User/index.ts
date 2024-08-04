@@ -52,17 +52,21 @@ export async function createAdminUser(user: CreateUser) {
 }
 
 export async function getUserById(id: number) {
-  return await prisma.user.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      username: true,
-      email: true,
-      isAdmin: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-  });
+  try {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        isAdmin: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  } catch (e: any) {
+    throw e;
+  }
 }
 
 interface UpdateUser {
@@ -93,7 +97,14 @@ export async function updateUser(user: UpdateUser) {
 }
 
 export async function deleteUser(id: number) {
-  return await prisma.user.delete({
-    where: { id },
-  });
+  try {
+    return await prisma.user.delete({
+      where: { id },
+    });
+  } catch (e: any) {
+    if (e.code === "P2025") {
+      throw new Error("User not found");
+    }
+    throw e;
+  }
 }

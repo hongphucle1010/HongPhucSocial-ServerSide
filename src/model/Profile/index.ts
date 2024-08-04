@@ -1,7 +1,9 @@
+import { parse } from "path";
 import prisma from "../../client";
 
 interface CreateProfile {
-  name: string;
+  firstName: string | null;
+  lastName: string | null;
   bio: string | null;
   avatar: string | null;
   userId: number;
@@ -11,14 +13,18 @@ export async function createProfile(profile: CreateProfile) {
   if (!profile.userId) {
     throw new Error("User ID is required");
   }
-  if (!profile.name) {
-    throw new Error("Name is required");
-  }
   try {
     return await prisma.profile.create({
-      data: profile,
+      data: {
+        ...profile,
+        userId:
+          typeof profile.userId === "string"
+            ? parseInt(profile.userId)
+            : profile.userId,
+      },
     });
   } catch (e: any) {
+    console.log(e);
     if (e.code === "P2002") {
       throw new Error("Profile already exists");
     }
@@ -28,7 +34,8 @@ export async function createProfile(profile: CreateProfile) {
 
 interface UpdateProfile {
   id: number;
-  name?: string;
+  firstName?: string | null;
+  lastName?: string | null;
   bio?: string | null;
   avatar?: string | null;
 }
@@ -54,7 +61,14 @@ export async function updateProfile(profile: UpdateProfile) {
 }
 
 export async function deleteProfile(id: number) {
-  return await prisma.profile.delete({
-    where: { id },
-  });
+  try {
+    return await prisma.profile.delete({
+      where: { id },
+    });
+  } catch (e: any) {
+    if (e.code === "P2025") {
+      throw new Error("Profile not found");
+    }
+    throw e;
+  }
 }

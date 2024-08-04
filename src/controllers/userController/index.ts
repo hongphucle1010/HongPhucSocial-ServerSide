@@ -16,6 +16,9 @@ export async function getUserByIdController(req: any, res: any) {
       throw new Error("Invalid user ID");
     }
     const user = await getUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
     res.status(200).json(user);
   } catch (e: any) {
     res.status(400).json({ message: e.message });
