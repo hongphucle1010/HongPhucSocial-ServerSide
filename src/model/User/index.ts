@@ -1,3 +1,4 @@
+import { User } from "@prisma/client";
 import prisma from "../../client";
 
 interface CreateUser {
@@ -76,6 +77,30 @@ interface UpdateUser {
   password?: string;
 }
 
+export async function getUserByUsername(username: string) {
+  try {
+    return await prisma.user.findFirst({
+      where: {
+        username,
+      },
+    });
+  } catch (e: any) {
+    throw e;
+  }
+}
+
+export async function getUserByEmail(email: string) {
+  try {
+    return await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+  } catch (e: any) {
+    throw e;
+  }
+}
+
 export async function updateUser(user: UpdateUser) {
   try {
     if (!user.id) {
@@ -98,10 +123,60 @@ export async function updateUser(user: UpdateUser) {
 
 export async function deleteUser(id: number) {
   try {
-    return await prisma.user.delete({
-      where: { id },
-    });
+    await prisma.$transaction([
+      prisma.post.deleteMany({
+        where: {
+          authorId: id,
+        },
+      }),
+      prisma.comment.deleteMany({
+        where: {
+          authorId: id,
+        },
+      }),
+      prisma.like.deleteMany({
+        where: {
+          userId: id,
+        },
+      }),
+      prisma.friendship.deleteMany({
+        where: {
+          requesterId: id,
+        },
+      }),
+      prisma.friendship.deleteMany({
+        where: {
+          requesteeId: id,
+        },
+      }),
+      prisma.message.deleteMany({
+        where: {
+          senderId: id,
+        },
+      }),
+      prisma.message.deleteMany({
+        where: {
+          receiverId: id,
+        },
+      }),
+      prisma.notification.deleteMany({
+        where: {
+          userId: id,
+        },
+      }),
+      prisma.profile.deleteMany({
+        where: {
+          userId: id,
+        },
+      }),
+      prisma.user.delete({
+        where: { id },
+      }),
+    ]);
+
+    return { message: "User and related data deleted successfully" };
   } catch (e: any) {
+    console.error(e);
     if (e.code === "P2025") {
       throw new Error("User not found");
     }

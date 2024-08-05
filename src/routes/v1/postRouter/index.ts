@@ -1,3 +1,4 @@
+// Route: /api/v1/post
 import express from "express";
 import {
   createPostController,

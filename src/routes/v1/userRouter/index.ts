@@ -1,3 +1,4 @@
+// Route: /api/v1/user
 import express from "express";
 import {
   createUserController,

@@ -1,11 +1,15 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { createServer } from "http";
 import path from "path";
 import { Server } from "socket.io";
 import { routes } from "./routes";
 import chatSocket from "./sockets/chat";
+import initializePassport from "./passport";
+import * as dotenv from "dotenv";
+import passport from "passport";
+import { User } from "@prisma/client";
 
-require("dotenv").config();
+dotenv.config();
 
 const app = express();
 const server = createServer(app);
@@ -18,6 +22,9 @@ const io = new Server(server, {
 
 const port = process.env.PORT || 3000;
 
+initializePassport();
+
+app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -26,6 +33,11 @@ app.use("/*", (req, res) => {
   res.json({
     message: "Error: Route not found",
   });
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something broke!" });
 });
 
 io.on("connection", (socket) => {

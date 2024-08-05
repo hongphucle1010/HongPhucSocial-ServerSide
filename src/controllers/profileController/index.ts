@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import {
   createProfile,
   getProfile,
@@ -5,7 +6,7 @@ import {
   deleteProfile,
 } from "../../model/Profile";
 
-export async function createProfileController(req: any, res: any) {
+export async function createProfileController(req: Request, res: Response) {
   try {
     const profile = await createProfile(req.body);
     res.status(201).json(profile);
@@ -14,7 +15,7 @@ export async function createProfileController(req: any, res: any) {
   }
 }
 
-export async function getProfileController(req: any, res: any) {
+export async function getProfileController(req: Request, res: Response) {
   try {
     const profileId = parseInt(req.params.id);
     if (isNaN(profileId)) {
@@ -27,7 +28,7 @@ export async function getProfileController(req: any, res: any) {
   }
 }
 
-export async function updateProfileController(req: any, res: any) {
+export async function updateProfileController(req: Request, res: Response) {
   try {
     const profileId = parseInt(req.params.id);
     if (isNaN(profileId)) {
@@ -40,7 +41,7 @@ export async function updateProfileController(req: any, res: any) {
   }
 }
 
-export async function deleteProfileController(req: any, res: any) {
+export async function deleteProfileController(req: Request, res: Response) {
   try {
     const profileId = parseInt(req.params.id);
     if (isNaN(profileId)) {

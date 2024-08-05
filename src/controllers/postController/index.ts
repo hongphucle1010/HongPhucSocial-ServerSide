@@ -1,3 +1,4 @@
+import { Request, Response } from "express";
 import {
   createPost,
   updatePost,
@@ -5,7 +6,7 @@ import {
   getPostById,
 } from "../../model/Post";
 
-export async function createPostController(req: any, res: any) {
+export async function createPostController(req: Request, res: Response) {
   try {
     const post = await createPost(req.body);
     res.status(201).json(post);
@@ -14,7 +15,7 @@ export async function createPostController(req: any, res: any) {
   }
 }
 
-export async function getPostController(req: any, res: any) {
+export async function getPostController(req: Request, res: Response) {
   try {
     const postId = parseInt(req.params.id);
     if (isNaN(postId)) {
@@ -27,7 +28,7 @@ export async function getPostController(req: any, res: any) {
   }
 }
 
-export async function updatePostController(req: any, res: any) {
+export async function updatePostController(req: Request, res: Response) {
   try {
     const postId = parseInt(req.params.id);
     if (isNaN(postId)) {
@@ -40,7 +41,7 @@ export async function updatePostController(req: any, res: any) {
   }
 }
 
-export async function deletePostController(req: any, res: any) {
+export async function deletePostController(req: Request, res: Response) {
   try {
     const postId = parseInt(req.params.id);
     if (isNaN(postId)) {

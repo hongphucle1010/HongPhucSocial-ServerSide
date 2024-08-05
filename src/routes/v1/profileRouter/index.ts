@@ -1,3 +1,4 @@
+// Route: /api/v1/profile
 import express from "express";
 import {
   createProfileController,
