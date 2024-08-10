@@ -1,6 +1,14 @@
 import { FriendshipStatus } from "@prisma/client";
 import prisma from "../../client";
 
+export const enum ClientFriendshipStatus {
+  none = "none",
+  pendingToBeAccepted = "pendingToBeAccepted",
+  pendingToAccept = "pendingToAccept",
+  accepted = "accepted",
+  rejected = "rejected",
+}
+
 interface CreateFriendship {
   requesterId: number;
   requesteeId: number;

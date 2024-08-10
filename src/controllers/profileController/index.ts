@@ -8,7 +8,10 @@ import {
   getProfileByUsername,
 } from "../../model/Profile";
 import { FriendshipStatus } from "@prisma/client";
-import { getFriendshipByPairId } from "../../model/Friendship";
+import {
+  ClientFriendshipStatus,
+  getFriendshipByPairId,
+} from "../../model/Friendship";
 
 export async function createProfileController(req: Request, res: Response) {
   try {
@@ -51,7 +54,15 @@ export async function getProfileByUsernameController(req: any, res: Response) {
           currentUserId,
           profile.userId
         );
-        return friendshipStatus?.status || FriendshipStatus.none;
+        if (!friendshipStatus?.status) {
+          return FriendshipStatus.none;
+        }
+        if (friendshipStatus.status === FriendshipStatus.pending) {
+          if (friendshipStatus.requesterId === currentUserId) {
+            return ClientFriendshipStatus.pendingToBeAccepted;
+          } else return ClientFriendshipStatus.pendingToAccept;
+        }
+        return friendshipStatus.status;
       }
     };
 

@@ -4,6 +4,7 @@ import {
   getFriendshipByPairId,
   getFriendshipByPairUsername,
   sendFriendshipRequest,
+  ClientFriendshipStatus,
 } from "../../model/Friendship";
 import { Response } from "express";
 export async function getFriendshipController(req: any, res: Response) {
@@ -31,9 +32,10 @@ export async function sendFriendshipRequestController(req: any, res: Response) {
   try {
     const response = await sendFriendshipRequest(requesterId, requesteeId);
     if (response.status === FriendshipStatus.pending) {
-      res
-        .status(200)
-        .json({ message: "Friendship request sent", status: response.status });
+      res.status(200).json({
+        message: "Friendship request sent",
+        status: ClientFriendshipStatus.pendingToBeAccepted,
+      });
     } else {
       res.status(200).json({
         message: "Accepted friendship request",
