@@ -5,7 +5,7 @@ interface CreateProfile {
   firstName: string | null;
   lastName: string | null;
   bio: string | null;
-  avatar: string | null;
+  avatarUrl: string | null;
   userId: number;
 }
 
@@ -37,12 +37,31 @@ interface UpdateProfile {
   firstName?: string | null;
   lastName?: string | null;
   bio?: string | null;
-  avatar?: string | null;
+  avatarUrl?: string | null;
 }
 
 export async function getProfile(id: number) {
   return await prisma.profile.findUnique({
     where: { id },
+  });
+}
+
+export async function getProfileByUserId(userId: number) {
+  return await prisma.profile.findFirst({
+    where: { userId },
+  });
+}
+
+export async function getProfileByUsername(username: string) {
+  return await prisma.profile.findFirst({
+    where: { user: { username } },
+    select: {
+      firstName: true,
+      lastName: true,
+      bio: true,
+      avatarUrl: true,
+      userId: true,
+    },
   });
 }
 

@@ -3,7 +3,7 @@ import passport from "passport";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../../constants";
 import { NextFunction, request, Request, Response } from "express";
-import { info } from "console";
+import { getProfileByUserId } from "../../model/Profile";
 
 export function generateToken(user: User) {
   return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
@@ -48,7 +48,8 @@ export async function handleLogin(
         if (error) return next(error);
 
         const token = generateToken(user);
-        return res.json({ token });
+        const { password, ...userWithoutPassword } = user;
+        return res.json({ token, user: userWithoutPassword });
       });
     } catch (error) {
       return next(error);
@@ -100,7 +101,7 @@ export async function isLoginAuth(
     await passport.authenticate(
       "jwt",
       { session: false },
-      (err: Error, user: User, info: any) => {
+      (err: Error, user: any, info: any) => {
         if (err) {
           return next(err);
         }
@@ -117,4 +118,4 @@ export async function isLoginAuth(
   }
 }
 
-export const loginController = [isLoginAuth, blockLoggedIn, handleLogin];
+export const loginController = [blockLoggedIn, handleLogin];

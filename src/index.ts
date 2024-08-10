@@ -7,7 +7,8 @@ import chatSocket from "./sockets/chat";
 import initializePassport from "./passport";
 import * as dotenv from "dotenv";
 import passport from "passport";
-import { User } from "@prisma/client";
+import cors from "cors";
+import fix from "./fix";
 
 dotenv.config();
 
@@ -23,12 +24,13 @@ const io = new Server(server, {
 const port = process.env.PORT || 3000;
 
 initializePassport();
-
+app.use(cors());
 app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/api", routes);
+app.use("/fix", fix);
 app.use("/*", (req, res) => {
   res.json({
     message: "Error: Route not found",

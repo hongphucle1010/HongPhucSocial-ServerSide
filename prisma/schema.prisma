@@ -65,12 +65,12 @@ model Like {
 }
 
 model Friendship {
-  id          Int      @id @default(autoincrement())
+  id          Int              @id @default(autoincrement())
   requesterId Int
   requesteeId Int
-  status      String // pending, accepted, rejected, etc.
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  status      FriendshipStatus @default(pending)
+  createdAt   DateTime         @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @db.Timestamptz(6)
 
   requester User @relation("SentFriendships", fields: [requesterId], references: [id])
   requestee User @relation("ReceivedFriendships", fields: [requesteeId], references: [id])
@@ -94,6 +94,13 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now()) @db.Timestamptz(6)
   read      Boolean  @default(false)
+}
+
+enum FriendshipStatus {
+  pending
+  rejected
+  accepted
+  none
 }
 
 datasource db {

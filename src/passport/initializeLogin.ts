@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy, VerifyFunction } from "passport-local";
-import { getUserByEmail } from "../model/User";
 import bcryptjs from "bcryptjs";
+import { getUserWithProfileByEmail } from "../model/UserWithProfile";
 
 export const initializeLogin = () => {
   passport.use(
@@ -15,7 +15,7 @@ export const initializeLogin = () => {
         // Verify the user's credentials and call the 'done' callback
         // with the user object or an error
         try {
-          const user = await getUserByEmail(email);
+          const user = await getUserWithProfileByEmail(email);
 
           if (!user) {
             return done(null, false, { message: "User not found" });

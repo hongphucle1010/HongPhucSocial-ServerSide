@@ -3,6 +3,7 @@ import passport from "passport";
 import { body, validationResult } from "express-validator";
 import { User } from "@prisma/client";
 import { isLoginAuth, blockLoggedIn } from "./login";
+import { createProfile } from "../../model/Profile";
 
 const validateUser = [
   body("username")
@@ -30,14 +31,25 @@ async function handleSignUp(req: Request, res: Response, next: NextFunction) {
     passport.authenticate(
       "signup",
       { session: false },
-      (error: Error, user: User | null, info: any) => {
+      async (error: Error, user: User | null, info: any) => {
         if (error) {
           return next(error);
         }
         if (!user) {
           return res.status(400).json({ message: info.message });
         }
-        res.status(201).json({ message: "Sign up successful", user: user });
+        const { password, ...userWithoutPassword } = user;
+        const profile = await createProfile({
+          userId: user.id,
+          firstName: null,
+          lastName: null,
+          bio: null,
+          avatarUrl: null,
+        });
+        const userWithProfile = { ...userWithoutPassword, profile };
+        res
+          .status(201)
+          .json({ message: "Sign up successful", user: userWithProfile });
       }
     )(req, res, next);
   } catch (e: any) {
@@ -45,10 +57,5 @@ async function handleSignUp(req: Request, res: Response, next: NextFunction) {
   }
 }
 
-const signUpController = [
-  isLoginAuth,
-  blockLoggedIn,
-  ...validateUser,
-  handleSignUp,
-];
+const signUpController = [blockLoggedIn, ...validateUser, handleSignUp];
 export { signUpController };

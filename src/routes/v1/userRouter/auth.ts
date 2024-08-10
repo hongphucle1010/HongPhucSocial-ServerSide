@@ -9,11 +9,10 @@ export const authRouter = express.Router();
 authRouter.post("/signup", signUpController);
 authRouter.post("/login", loginController);
 authRouter.get("/status", [
-  isLoginAuth,
-  async (req: Request, res: Response) => {
+    async (req: Request, res: Response) => {
     if (req.isAuthenticated()) {
-      return res.json({ message: "Authenticated" });
+      return res.json({ message: "Authenticated", user: req.user });
     }
-    return res.json({ message: "Not authenticated" });
+    return res.json({ message: "Not authenticated", user: null });
   },
 ]);

@@ -4,7 +4,11 @@ import {
   getProfile,
   updateProfile,
   deleteProfile,
+  getProfileByUserId,
+  getProfileByUsername,
 } from "../../model/Profile";
+import { FriendshipStatus } from "@prisma/client";
+import { getFriendshipByPairId } from "../../model/Friendship";
 
 export async function createProfileController(req: Request, res: Response) {
   try {
@@ -23,6 +27,42 @@ export async function getProfileController(req: Request, res: Response) {
     }
     const profile = await getProfile(profileId);
     res.status(200).json(profile);
+  } catch (e: any) {
+    res.status(400).json({ message: e.message });
+  }
+}
+
+export async function getProfileByUsernameController(req: any, res: Response) {
+  try {
+    const username = req.params.username;
+    const profile = await getProfileByUsername(username);
+    const currentUserId = parseInt(req.query?.currentUserId);
+
+    const findFriendStatus = async () => {
+      if (!currentUserId) {
+        return FriendshipStatus.none;
+      } else if (!profile?.userId) {
+        return FriendshipStatus.none;
+      } else if (profile?.userId === (req?.user as any)?.id) {
+        return FriendshipStatus.none;
+      } else {
+        // Find friendship status
+        const friendshipStatus = await getFriendshipByPairId(
+          currentUserId,
+          profile.userId
+        );
+        return friendshipStatus?.status || FriendshipStatus.none;
+      }
+    };
+
+    const friendStatus = await findFriendStatus();
+
+    const user = {
+      profile: profile,
+      username: username,
+      friendStatus: friendStatus,
+    };
+    res.status(200).json(user);
   } catch (e: any) {
     res.status(400).json({ message: e.message });
   }

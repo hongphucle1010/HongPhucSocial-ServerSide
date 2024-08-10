@@ -70,6 +70,19 @@ export async function getUserById(id: number) {
   }
 }
 
+export async function getPasswordById(id: number) {
+  try {
+    return await prisma.user.findUnique({
+      where: { id },
+      select: {
+        password: true,
+      },
+    });
+  } catch (e: any) {
+    throw e;
+  }
+}
+
 interface UpdateUser {
   id: number;
   username?: string;
@@ -117,6 +130,20 @@ export async function updateUser(user: UpdateUser) {
     if (e.code === "P2002") {
       throw new Error("Username or email already exists");
     }
+    throw e;
+  }
+}
+
+export async function updatePassword(id: number, password: string) {
+  try {
+    return await prisma.user.update({
+      where: { id },
+      data: {
+        password,
+        updatedAt: new Date(),
+      },
+    });
+  } catch (e: any) {
     throw e;
   }
 }
