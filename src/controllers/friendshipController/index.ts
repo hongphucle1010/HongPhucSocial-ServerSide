@@ -7,6 +7,7 @@ import {
   ClientFriendshipStatus,
 } from "../../model/Friendship";
 import { Response } from "express";
+
 export async function getFriendshipController(req: any, res: Response) {
   const id1 = parseInt(req.query.id1);
   const id2 = parseInt(req.query.id2);

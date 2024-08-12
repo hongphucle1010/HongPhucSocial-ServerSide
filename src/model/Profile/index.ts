@@ -49,6 +49,19 @@ export async function getProfile(id: number) {
 export async function getProfileByUserId(userId: number) {
   return await prisma.profile.findFirst({
     where: { userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      bio: true,
+      avatarUrl: true,
+      userId: true,
+      user: {
+        select: {
+          username: true,
+        },
+      },
+    },
   });
 }
 

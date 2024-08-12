@@ -19,6 +19,27 @@ const io = new Server(server, {
     maxDisconnectionDuration: 2 * 60 * 1000, // 2 minutes
     skipMiddlewares: true, // Skip the middleware check
   },
+  cors: {
+    origin: process.env.CORS_ORIGIN,
+  },
+});
+
+io.use((socket, next) => {
+  const originalOnevent = (socket as any).onevent;
+  (socket as any).onevent = (packet: any) => {
+    const eventName = packet.data[0];
+    console.log(`Received event: ${eventName}`, packet.data);
+    originalOnevent.call(socket, packet);
+  };
+
+  const originalEmit = socket.emit;
+  socket.emit = (...args): any => {
+    const eventName = args[0];
+    console.log(`Emitting event: ${eventName}`, args);
+    originalEmit.apply(socket, args);
+  };
+
+  next();
 });
 
 const port = process.env.PORT || 3000;
