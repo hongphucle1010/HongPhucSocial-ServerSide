@@ -13,7 +13,7 @@ export function generateToken(user: User) {
 
 export function blockLoggedIn(req: Request, res: Response, next: NextFunction) {
   if (req.isAuthenticated()) {
-    return res.json({ message: "Already authenticated" });
+    return res.status(401).json({ message: "Already authenticated" });
   }
   next();
 }
@@ -24,7 +24,7 @@ export function blockNotLoggedIn(
   next: NextFunction
 ) {
   if (!req.isAuthenticated()) {
-    return res.json({ message: "Not authenticated" });
+    return res.status(401).json({ message: "Not authenticated" });
   }
   next();
 }
