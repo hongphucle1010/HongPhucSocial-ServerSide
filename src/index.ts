@@ -20,7 +20,10 @@ const io = new Server(server, {
     skipMiddlewares: true, // Skip the middleware check
   },
   cors: {
-    origin: process.env.CORS_ORIGIN,
+    origin: [
+      process.env.CORS_ORIGIN_1 as string,
+      process.env.CORS_ORIGIN_2 as string,
+    ],
   },
 });
 
