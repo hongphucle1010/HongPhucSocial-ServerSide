@@ -178,3 +178,49 @@ export async function deleteFriendshipByPairId(id1: number, id2: number) {
   });
   return response;
 }
+
+export async function getListOfFriends(userId: number) {
+  const response = await prisma.friendship.findMany({
+    where: {
+      OR: [
+        {
+          requesterId: userId,
+          status: FriendshipStatus.accepted,
+        },
+        {
+          requesteeId: userId,
+          status: FriendshipStatus.accepted,
+        },
+      ],
+    },
+    select: {
+      requesteeId: true,
+      requesterId: true,
+      requestee: {
+        select: {
+          username: true,
+          profile: {
+            select: {
+              avatarUrl: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+      requester: {
+        select: {
+          username: true,
+          profile: {
+            select: {
+              avatarUrl: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  });
+  return response;
+}

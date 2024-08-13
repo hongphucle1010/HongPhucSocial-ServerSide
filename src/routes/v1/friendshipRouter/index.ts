@@ -3,6 +3,7 @@ import express from "express";
 import {
   deleteFriendshipController,
   getFriendshipController,
+  getListOfFriendsController,
   sendFriendshipRequestController,
 } from "../../../controllers/friendshipController";
 import {
@@ -22,4 +23,9 @@ friendshipRouter.delete("/", [
   isLoginAuth,
   blockNotLoggedIn,
   deleteFriendshipController,
+]);
+friendshipRouter.get("/list", [
+  isLoginAuth,
+  blockNotLoggedIn,
+  getListOfFriendsController,
 ]);

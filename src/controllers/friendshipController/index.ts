@@ -5,6 +5,7 @@ import {
   getFriendshipByPairUsername,
   sendFriendshipRequest,
   ClientFriendshipStatus,
+  getListOfFriends,
 } from "../../model/Friendship";
 import { Response } from "express";
 
@@ -56,6 +57,22 @@ export async function deleteFriendshipController(req: any, res: Response) {
   try {
     const response = await deleteFriendshipByPairId(id1, id2);
     res.status(200).json({ message: "Friendship deleted", response });
+  } catch (e: any) {
+    res.status(400).json({ error: e.message });
+  }
+}
+
+export async function getListOfFriendsController(req: any, res: Response) {
+  const id = req.user.id;
+
+  try {
+    const friends = await getListOfFriends(id);
+    const friendsList = friends.map((friend) => {
+      if (friend.requesteeId === id)
+        return { userId: friend.requesterId, ...friend.requester };
+      else return { userId: friend.requesteeId, ...friend.requestee };
+    });
+    res.status(200).json({ friendsList });
   } catch (e: any) {
     res.status(400).json({ error: e.message });
   }
