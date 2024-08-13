@@ -40,6 +40,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "start": "node dist/index.js",
     "dummy": "node dummyTest.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc"
