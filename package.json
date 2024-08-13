@@ -40,7 +40,6 @@
   },
   "type": "commonjs",
   "scripts": {
-    "test": "jest --watch",
     "dummy": "node dummyTest.js",
     "dev": "nodemon src/index.ts",
     "build": "tsc"
