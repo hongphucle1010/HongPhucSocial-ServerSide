@@ -21,32 +21,37 @@ async function handleUploadAvatar(req: any, res: any) {
 
   const oldAvatarUrl = profile?.avatarUrl;
   console.log("Old avatar: ", oldAvatarUrl);
-  if (oldAvatarUrl) {
-    const blobName = extractBlobName(oldAvatarUrl);
-    await deleteBlob(blobName);
-  }
-
-  if (!profile) {
-    return res.status(404).json({ message: "Profile not found" });
-  }
-
   try {
-    const blobName = Date.now() + path.extname(req.file.originalname);
-    const buffer = await imageResize(req.file.buffer, 200, 200);
-
-    const blobUrl = await uploadBlob(blobName, buffer);
-
-    await updateProfile({
-      id: profile.id,
-      avatarUrl: blobUrl,
-    });
-
-    return res.status(200).json({
-      message: "File uploaded successfully.",
-      url: blobUrl,
-    });
+    if (oldAvatarUrl) {
+      const blobName = extractBlobName(oldAvatarUrl);
+      await deleteBlob(blobName);
+    }
   } catch (error: any) {
+    console.log("Error deleting old avatar: ", error.message);
     return res.status(500).json({ message: error.message });
+  } finally {
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+
+    try {
+      const blobName = Date.now() + path.extname(req.file.originalname);
+      const buffer = await imageResize(req.file.buffer, 200, 200);
+
+      const blobUrl = await uploadBlob(blobName, buffer);
+
+      await updateProfile({
+        id: profile.id,
+        avatarUrl: blobUrl,
+      });
+
+      return res.status(200).json({
+        message: "File uploaded successfully.",
+        url: blobUrl,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ message: error.message });
+    }
   }
 }
 
