@@ -67,7 +67,11 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 io.on("connection", (socket) => {
-  chatSocket(socket, io);
+  try {
+    chatSocket(socket, io);
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 server.listen(port, () => {
