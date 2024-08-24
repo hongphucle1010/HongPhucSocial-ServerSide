@@ -1,13 +1,9 @@
-import prisma from "../../client";
+import prisma from '../../client';
+import { NotificationCreateContent, NotificationUpdateContent } from './types';
 
-interface CreateNotification {
-  content: string;
-  userId: number;
-}
-
-export async function createNotification(notification: CreateNotification) {
+export async function createNotification(notification: NotificationCreateContent) {
   if (!notification.content || !notification.userId) {
-    throw new Error("Missing required fields");
+    throw new Error('Missing required fields');
   }
   try {
     return await prisma.notification.create({
@@ -27,15 +23,10 @@ export async function getNotificationById(id: number) {
   });
 }
 
-interface UpdateNotification {
-  id: number;
-  read?: boolean;
-}
-
-export async function updateNotification(notification: UpdateNotification) {
+export async function updateNotification(notification: NotificationUpdateContent) {
   try {
     if (!notification.id) {
-      throw new Error("id is required");
+      throw new Error('id is required');
     }
     return await prisma.notification.update({
       where: { id: notification.id },

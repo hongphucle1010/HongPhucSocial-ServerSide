@@ -9,9 +9,9 @@ import {
 } from "../../model/Profile";
 import { FriendshipStatus } from "@prisma/client";
 import {
-  ClientFriendshipStatus,
   getFriendshipByPairId,
 } from "../../model/Friendship";
+import { ClientFriendshipStatus } from "../../model/Friendship/types";
 
 export async function createProfileController(req: Request, res: Response) {
   try {

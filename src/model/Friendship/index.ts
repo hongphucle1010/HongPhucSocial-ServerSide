@@ -1,21 +1,8 @@
 import { FriendshipStatus } from "@prisma/client";
 import prisma from "../../client";
+import { FriendshipCreateContent, FriendshipUpdateContent } from "./types";
 
-export const enum ClientFriendshipStatus {
-  none = "none",
-  pendingToBeAccepted = "pendingToBeAccepted",
-  pendingToAccept = "pendingToAccept",
-  accepted = "accepted",
-  rejected = "rejected",
-}
-
-interface CreateFriendship {
-  requesterId: number;
-  requesteeId: number;
-  status: FriendshipStatus;
-}
-
-export async function createFriendship(friendship: CreateFriendship) {
+export async function createFriendship(friendship: FriendshipCreateContent) {
   if (
     !friendship.requesterId ||
     !friendship.requesteeId ||
@@ -42,12 +29,7 @@ export async function getFriendshipById(id: number) {
   });
 }
 
-interface UpdateFriendship {
-  id: number;
-  status?: FriendshipStatus;
-}
-
-export async function updateFriendship(friendship: UpdateFriendship) {
+export async function updateFriendship(friendship: FriendshipUpdateContent) {
   try {
     if (!friendship.id) {
       throw new Error("id is required");

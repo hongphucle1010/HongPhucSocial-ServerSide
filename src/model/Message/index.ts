@@ -1,12 +1,7 @@
 import prisma from "../../client";
+import { MessageContent } from "./types";
 
-interface CreateMessage {
-  senderId: number;
-  receiverId: number;
-  content: string;
-}
-
-export async function createMessage(message: CreateMessage) {
+export async function createMessage(message: MessageContent) {
   if (!message.senderId || !message.receiverId || !message.content) {
     throw new Error("Missing required fields");
   }

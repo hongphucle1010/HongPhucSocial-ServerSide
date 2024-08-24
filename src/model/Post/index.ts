@@ -1,9 +1,5 @@
 import prisma from "../../client";
-
-interface CreatePost {
-  content: string;
-  authorId: number;
-}
+import { CreatePost, UpdatePost } from "./types";
 
 export async function createPost(post: CreatePost) {
   if (!post.content || !post.authorId) {
@@ -37,11 +33,6 @@ export async function getPostById(id: number) {
     }
     throw e;
   }
-}
-
-interface UpdatePost {
-  id: number;
-  content?: string;
 }
 
 export async function updatePost(post: UpdatePost) {

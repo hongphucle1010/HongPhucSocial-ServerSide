@@ -1,15 +1,7 @@
-import { parse } from "path";
 import prisma from "../../client";
+import { ProfileCreateContent, ProfileUpdateContent } from "./types";
 
-interface CreateProfile {
-  firstName: string | null;
-  lastName: string | null;
-  bio: string | null;
-  avatarUrl: string | null;
-  userId: number;
-}
-
-export async function createProfile(profile: CreateProfile) {
+export async function createProfile(profile: ProfileCreateContent) {
   if (!profile.userId) {
     throw new Error("User ID is required");
   }
@@ -30,14 +22,6 @@ export async function createProfile(profile: CreateProfile) {
     }
     throw e;
   }
-}
-
-interface UpdateProfile {
-  id: number;
-  firstName?: string | null;
-  lastName?: string | null;
-  bio?: string | null;
-  avatarUrl?: string | null;
 }
 
 export async function getProfile(id: number) {
@@ -78,7 +62,7 @@ export async function getProfileByUsername(username: string) {
   });
 }
 
-export async function updateProfile(profile: UpdateProfile) {
+export async function updateProfile(profile: ProfileUpdateContent) {
   try {
     if (!profile.id) {
       throw new Error("id is required");

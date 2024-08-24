@@ -1,16 +1,9 @@
-import { User } from "@prisma/client";
-import prisma from "../../client";
+import prisma from '../../client';
+import { UserCreateContent, UserUpdateContent } from './types';
 
-interface CreateUser {
-  username: string;
-  email: string;
-  password: string;
-  isAdmin?: boolean;
-}
-
-export async function createUser(user: CreateUser) {
+export async function createUser(user: UserCreateContent) {
   if (!user.email || !user.username || !user.password) {
-    throw new Error("Missing required fields");
+    throw new Error('Missing required fields');
   }
   try {
     return await prisma.user.create({
@@ -21,19 +14,19 @@ export async function createUser(user: CreateUser) {
       },
     });
   } catch (e: any) {
-    if (e.code === "P2002") {
-      throw new Error("Username or email already exists");
+    if (e.code === 'P2002') {
+      throw new Error('Username or email already exists');
     }
     throw e;
   }
 }
 
-export async function createAdminUser(user: CreateUser) {
+export async function createAdminUser(user: UserCreateContent) {
   if (!user.email || !user.username || !user.password) {
-    throw new Error("Missing required fields");
+    throw new Error('Missing required fields');
   }
   if (user.isAdmin === false) {
-    throw new Error("isAdmin must be true");
+    throw new Error('isAdmin must be true');
   }
 
   try {
@@ -45,8 +38,8 @@ export async function createAdminUser(user: CreateUser) {
       },
     });
   } catch (e: any) {
-    if (e.code === "P2002") {
-      throw new Error("Username or email already exists");
+    if (e.code === 'P2002') {
+      throw new Error('Username or email already exists');
     }
     throw e;
   }
@@ -83,13 +76,6 @@ export async function getPasswordById(id: number) {
   }
 }
 
-interface UpdateUser {
-  id: number;
-  username?: string;
-  email?: string;
-  password?: string;
-}
-
 export async function getUserByUsername(username: string) {
   try {
     return await prisma.user.findFirst({
@@ -114,10 +100,10 @@ export async function getUserByEmail(email: string) {
   }
 }
 
-export async function updateUser(user: UpdateUser) {
+export async function updateUser(user: UserUpdateContent) {
   try {
     if (!user.id) {
-      throw new Error("id is required");
+      throw new Error('id is required');
     }
     return await prisma.user.update({
       where: { id: user.id },
@@ -127,8 +113,8 @@ export async function updateUser(user: UpdateUser) {
       },
     });
   } catch (e: any) {
-    if (e.code === "P2002") {
-      throw new Error("Username or email already exists");
+    if (e.code === 'P2002') {
+      throw new Error('Username or email already exists');
     }
     throw e;
   }
@@ -201,11 +187,11 @@ export async function deleteUser(id: number) {
       }),
     ]);
 
-    return { message: "User and related data deleted successfully" };
+    return { message: 'User and related data deleted successfully' };
   } catch (e: any) {
     console.error(e);
-    if (e.code === "P2025") {
-      throw new Error("User not found");
+    if (e.code === 'P2025') {
+      throw new Error('User not found');
     }
     throw e;
   }

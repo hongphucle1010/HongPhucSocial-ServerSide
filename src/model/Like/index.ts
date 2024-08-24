@@ -1,11 +1,7 @@
 import prisma from "../../client";
+import { LikeContent } from "./types";
 
-interface CreateLike {
-  postId: number;
-  userId: number;
-}
-
-export async function createLike(like: CreateLike) {
+export async function createLike(like: LikeContent) {
   if (!like.postId || !like.userId) {
     throw new Error("Missing required fields");
   }

@@ -1,31 +1,15 @@
 // Route: /api/v1/friendship
-import express from "express";
+import express, { Request } from 'express';
 import {
   deleteFriendshipController,
   getFriendshipController,
   getListOfFriendsController,
   sendFriendshipRequestController,
-} from "../../../controllers/friendshipController";
-import {
-  blockNotLoggedIn,
-  isLoginAuth,
-} from "../../../controllers/authController/login";
+} from '../../../controllers/friendshipController';
 
 export const friendshipRouter = express.Router();
 
-friendshipRouter.get("/", getFriendshipController);
-friendshipRouter.post("/", [
-  isLoginAuth,
-  blockNotLoggedIn,
-  sendFriendshipRequestController,
-]);
-friendshipRouter.delete("/", [
-  isLoginAuth,
-  blockNotLoggedIn,
-  deleteFriendshipController,
-]);
-friendshipRouter.get("/list", [
-  isLoginAuth,
-  blockNotLoggedIn,
-  getListOfFriendsController,
-]);
+friendshipRouter.get('/', getFriendshipController);
+friendshipRouter.post('/', sendFriendshipRequestController);
+friendshipRouter.delete('/', deleteFriendshipController);
+friendshipRouter.get('/list', getListOfFriendsController);

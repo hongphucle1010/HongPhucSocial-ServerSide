@@ -1,60 +1,68 @@
-import { User } from "@prisma/client";
-import passport from "passport";
-import jwt from "jsonwebtoken";
-import { JWT_SECRET } from "../../constants";
-import { NextFunction, request, Request, Response } from "express";
-import { getProfileByUserId } from "../../model/Profile";
+import { User } from '@prisma/client';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../../constants';
+import { NextFunction, request, Request, Response } from 'express';
+import {
+  PassportJwtPayload,
+  PassportMessage,
+  UserTokenized,
+} from '../../passport/types';
+import { HttpError, HttpStatus } from '../../lib/error/HttpError';
 
 export function generateToken(user: User) {
-  return jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, {
-    expiresIn: "1h",
+  const userTokenized: UserTokenized = { id: user.id, username: user.username };
+  return jwt.sign(userTokenized, JWT_SECRET, {
+    expiresIn: '1h',
   });
 }
 
 export function blockLoggedIn(req: Request, res: Response, next: NextFunction) {
-  if (req.isAuthenticated()) {
-    return res.status(401).json({ message: "Already authenticated" });
-  }
+  if (req.isAuthenticated())
+    throw new HttpError('Already authenticated', HttpStatus.BadRequest);
   next();
 }
 
 export function blockNotLoggedIn(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
+  if (!req.isAuthenticated())
+    throw new HttpError('Not authenticated', HttpStatus.Unauthorized);
+
   next();
 }
 
 export async function handleLogin(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
-  passport.authenticate("login", async (err: Error, user: User, info: any) => {
-    try {
-      if (err) {
-        const error = new Error("An error occurred.");
+  passport.authenticate(
+    'login',
+    async (err: Error, user: User, info: PassportMessage) => {
+      try {
+        if (err) {
+          const error = new Error('An error occurred.');
+          return next(error);
+        }
+
+        if (!user) {
+          return res.status(401).json({ message: info.message });
+        }
+        req.login(user, { session: false }, async (error) => {
+          if (error) return next(error);
+
+          const token = generateToken(user);
+          const { password, ...userWithoutPassword } = user;
+          return res.json({ token, user: userWithoutPassword });
+        });
+      } catch (error) {
         return next(error);
       }
-
-      if (!user) {
-        return res.status(401).json({ message: info.message });
-      }
-      req.login(user, { session: false }, async (error) => {
-        if (error) return next(error);
-
-        const token = generateToken(user);
-        const { password, ...userWithoutPassword } = user;
-        return res.json({ token, user: userWithoutPassword });
-      });
-    } catch (error) {
-      return next(error);
-    }
-  })(req, res, next);
+    },
+  )(req, res, next);
 }
 
 /**
@@ -63,17 +71,17 @@ export async function handleLogin(
 export async function checkAndDecodeToken(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
-    const bearerHeader = req.headers["authorization"];
+    const bearerHeader = req.headers['authorization'];
     if (!bearerHeader) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const bearer = bearerHeader.split(" ");
-    if (bearer.length !== 2 || bearer[0] !== "Bearer") {
-      return res.status(401).json({ message: "Unauthorized" });
+    const bearer = bearerHeader.split(' ');
+    if (bearer.length !== 2 || bearer[0] !== 'Bearer') {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     const token = bearer[1];
@@ -82,12 +90,12 @@ export async function checkAndDecodeToken(
 
     const decode = jwt.verify(token, secret);
 
-    if (!decode || typeof decode !== "object") {
-      return res.status(401).json({ message: "Unauthorized" });
+    if (!decode || typeof decode !== 'object') {
+      return res.status(401).json({ message: 'Unauthorized' });
     }
     res.status(200).json(decode);
   } catch (e) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 }
 
@@ -95,13 +103,13 @@ export async function checkAndDecodeToken(
 export async function isLoginAuth(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) {
   try {
     await passport.authenticate(
-      "jwt",
+      'jwt',
       { session: false },
-      (err: Error, user: any, info: any) => {
+      (err: Error, user: PassportJwtPayload, info?: PassportMessage) => {
         if (err) {
           return next(err);
         }
@@ -110,8 +118,9 @@ export async function isLoginAuth(
           return next();
         }
         req.user = user;
+
         next();
-      }
+      },
     )(req, res, next);
   } catch (e) {
     next(e);
@@ -119,3 +128,5 @@ export async function isLoginAuth(
 }
 
 export const loginController = [blockLoggedIn, handleLogin];
+export const blockLoggedInMiddleware = [isLoginAuth, blockLoggedIn];
+export const blockNotLoggedInMiddleware = [isLoginAuth, blockNotLoggedIn];

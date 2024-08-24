@@ -1,14 +1,9 @@
-import prisma from "../../client";
+import prisma from '../../client';
+import { CommentContent, CommentUpdateContent } from './types';
 
-interface CreateComment {
-  content: string;
-  postId: number;
-  authorId: number;
-}
-
-export async function createComment(comment: CreateComment) {
+export async function createComment(comment: CommentContent) {
   if (!comment.content || !comment.postId || !comment.authorId) {
-    throw new Error("Missing required fields");
+    throw new Error('Missing required fields');
   }
   try {
     return await prisma.comment.create({
@@ -24,20 +19,15 @@ export async function createComment(comment: CreateComment) {
 }
 
 export async function getCommentById(id: number) {
-  return await prisma.comment.findUnique({
+  return prisma.comment.findUnique({
     where: { id },
   });
 }
 
-interface UpdateComment {
-  id: number;
-  content?: string;
-}
-
-export async function updateComment(comment: UpdateComment) {
+export async function updateComment(comment: CommentUpdateContent) {
   try {
     if (!comment.id) {
-      throw new Error("id is required");
+      throw new Error('id is required');
     }
     return await prisma.comment.update({
       where: { id: comment.id },
