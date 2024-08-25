@@ -10,6 +10,7 @@ import { MIN_PASSWORD_LENGTH, MIN_USERNAME_LENGTH } from '../../configs/number';
 import ERROR_MESSAGES from '../../configs/errorMessages';
 import SUCCESS_MESSAGES from '../../configs/successMessages';
 import expressAsyncHandler from 'express-async-handler';
+import { SignUpResponse } from './types';
 
 const validateUser = [
   body('username')
@@ -56,10 +57,11 @@ const handleSignUp = expressAsyncHandler(
           avatarUrl: null,
         });
         const userWithProfile = { ...userWithoutPassword, profile };
-        res.status(HttpStatus.Created).json({
+        const response: SignUpResponse = {
           message: SUCCESS_MESSAGES.auth.signUp,
           user: userWithProfile,
-        });
+        };
+        res.status(HttpStatus.Created).json(response);
       },
     )(req, res, next);
   },

@@ -3,7 +3,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcryptjs from 'bcryptjs';
 import { getUserWithProfileByEmail } from '../model/UserWithProfile';
 
-export const initializeLogin = () => {
+export const initializeLogin = (): void => {
   passport.use(
     'login',
     new LocalStrategy(

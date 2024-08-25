@@ -1,7 +1,8 @@
+import { User } from '@prisma/client';
 import prisma from '../../client';
 import { UserCreateContent, UserUpdateContent } from './types';
 
-export async function createUser(user: UserCreateContent) {
+export async function createUser(user: UserCreateContent): Promise<User> {
   if (!user.email || !user.username || !user.password) {
     throw new Error('Missing required fields');
   }
@@ -21,7 +22,7 @@ export async function createUser(user: UserCreateContent) {
   }
 }
 
-export async function createAdminUser(user: UserCreateContent) {
+export async function createAdminUser(user: UserCreateContent): Promise<User> {
   if (!user.email || !user.username || !user.password) {
     throw new Error('Missing required fields');
   }
@@ -45,62 +46,52 @@ export async function createAdminUser(user: UserCreateContent) {
   }
 }
 
-export async function getUserById(id: number) {
-  try {
-    return await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        isAdmin: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-  } catch (e: any) {
-    throw e;
-  }
+export async function getUserById(
+  id: number,
+): Promise<Omit<User, 'password'> | null> {
+  return await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      isAdmin: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 }
 
-export async function getPasswordById(id: number) {
-  try {
-    return await prisma.user.findUnique({
-      where: { id },
-      select: {
-        password: true,
-      },
-    });
-  } catch (e: any) {
-    throw e;
-  }
+export async function getPasswordById(
+  id: number,
+): Promise<{ password: string } | null> {
+  return await prisma.user.findUnique({
+    where: { id },
+    select: {
+      password: true,
+    },
+  });
 }
 
-export async function getUserByUsername(username: string) {
-  try {
-    return await prisma.user.findFirst({
-      where: {
-        username,
-      },
-    });
-  } catch (e: any) {
-    throw e;
-  }
+export async function getUserByUsername(
+  username: string,
+): Promise<User | null> {
+  return await prisma.user.findFirst({
+    where: {
+      username,
+    },
+  });
 }
 
-export async function getUserByEmail(email: string) {
-  try {
-    return await prisma.user.findFirst({
-      where: {
-        email,
-      },
-    });
-  } catch (e: any) {
-    throw e;
-  }
+export async function getUserByEmail(email: string): Promise<User | null> {
+  return await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
 }
 
-export async function updateUser(user: UserUpdateContent) {
+export async function updateUser(user: UserUpdateContent): Promise<User> {
   try {
     if (!user.id) {
       throw new Error('id is required');
@@ -120,21 +111,20 @@ export async function updateUser(user: UserUpdateContent) {
   }
 }
 
-export async function updatePassword(id: number, password: string) {
-  try {
-    return await prisma.user.update({
-      where: { id },
-      data: {
-        password,
-        updatedAt: new Date(),
-      },
-    });
-  } catch (e: any) {
-    throw e;
-  }
+export async function updatePassword(
+  id: number,
+  password: string,
+): Promise<User> {
+  return await prisma.user.update({
+    where: { id },
+    data: {
+      password,
+      updatedAt: new Date(),
+    },
+  });
 }
 
-export async function deleteUser(id: number) {
+export async function deleteUser(id: number): Promise<{ message: string }> {
   try {
     await prisma.$transaction([
       prisma.post.deleteMany({

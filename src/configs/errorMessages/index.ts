@@ -15,6 +15,8 @@ const ERROR_MESSAGES = {
   other: {
     invalidInput: 'Invalid input',
     invalidUser: 'Invalid user',
+    invalidId: 'Invalid id',
+    missingId: 'Id is required',
   },
 };
 

@@ -10,4 +10,11 @@ declare global {
       user?: User | undefined;
     }
   }
+
+  namespace MyResponse {
+    interface ResponseWithMessage {
+      message: string;
+      response: any;
+    }
+  }
 }

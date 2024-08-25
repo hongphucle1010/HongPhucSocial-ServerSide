@@ -11,6 +11,8 @@ import { HttpError } from '../../lib/error/HttpErrors';
 import { HttpStatus } from '../../lib/statusCode';
 import ERROR_MESSAGES from '../../configs/errorMessages';
 import expressAsyncHandler from 'express-async-handler';
+import { GetMessageByIdResponse, GetMessageResponse } from './types';
+import { MessageContent, MessageListElement } from 'src/model/Message/types';
 
 export const getMessageByIdController = expressAsyncHandler(
   async (req: Request, res: Response) => {
@@ -18,20 +20,33 @@ export const getMessageByIdController = expressAsyncHandler(
     const myId = req.user.id;
 
     if (!id) {
-      throw new HttpError('id is required', HttpStatus.BadRequest);
+      throw new HttpError(
+        ERROR_MESSAGES.other.missingId,
+        HttpStatus.BadRequest,
+      );
     }
 
     if (isNaN(id)) {
-      throw new HttpError('Invalid id', HttpStatus.BadRequest);
+      throw new HttpError(
+        ERROR_MESSAGES.other.invalidId,
+        HttpStatus.BadRequest,
+      );
     }
 
     if (!myId) {
-      throw new HttpError('Invalid user', HttpStatus.BadRequest);
+      throw new HttpError(
+        ERROR_MESSAGES.other.invalidUser,
+        HttpStatus.BadRequest,
+      );
     }
 
-    const response = await getMessageByPairId(myId, id);
+    const getMessageResult = await getMessageByPairId(myId, id);
     const userProfile = await getProfileByUserId(id);
-    res.status(HttpStatus.OK).json({ messageList: response, userProfile });
+    const response: GetMessageByIdResponse = {
+      messageList: getMessageResult,
+      userProfile,
+    };
+    res.status(HttpStatus.OK).json(response);
   },
 );
 
@@ -54,8 +69,12 @@ export const getMessageByUsernameController = expressAsyncHandler(
       );
     }
 
-    const response = await getMessageByPairUsername(myUsername, username);
-    res.status(HttpStatus.OK).json({ messageList: response });
+    const getMessageResult = await getMessageByPairUsername(
+      myUsername,
+      username,
+    );
+    const response: GetMessageResponse = { messageList: getMessageResult };
+    res.status(HttpStatus.OK).json(response);
   },
 );
 
@@ -80,7 +99,7 @@ export const sendMessageController = [
       );
     }
 
-    const response = await createMessage({
+    const response: MessageContent = await createMessage({
       senderId,
       receiverId,
       content: message,
@@ -100,7 +119,7 @@ export const getMessageListController = expressAsyncHandler(
       );
     }
 
-    const response = await getMessageList(myId);
+    const response: MessageListElement[] = await getMessageList(myId);
     res.status(HttpStatus.OK).json(response);
   },
 );

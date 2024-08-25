@@ -1,14 +1,20 @@
-import { FriendshipStatus } from "@prisma/client";
-import prisma from "../../client";
-import { FriendshipCreateContent, FriendshipUpdateContent } from "./types";
+import { Friendship, FriendshipStatus, Prisma } from '@prisma/client';
+import prisma from '../../client';
+import {
+  FriendshipCreateContent,
+  FriendshipUpdateContent,
+  FriendsList,
+} from './types';
 
-export async function createFriendship(friendship: FriendshipCreateContent) {
+export async function createFriendship(
+  friendship: FriendshipCreateContent,
+): Promise<Friendship> {
   if (
     !friendship.requesterId ||
     !friendship.requesteeId ||
     !friendship.status
   ) {
-    throw new Error("Missing required fields");
+    throw new Error('Missing required fields');
   }
   try {
     return await prisma.friendship.create({
@@ -23,16 +29,20 @@ export async function createFriendship(friendship: FriendshipCreateContent) {
   }
 }
 
-export async function getFriendshipById(id: number) {
+export async function getFriendshipById(
+  id: number,
+): Promise<Friendship | null> {
   return await prisma.friendship.findUnique({
     where: { id },
   });
 }
 
-export async function updateFriendship(friendship: FriendshipUpdateContent) {
+export async function updateFriendship(
+  friendship: FriendshipUpdateContent,
+): Promise<Friendship> {
   try {
     if (!friendship.id) {
-      throw new Error("id is required");
+      throw new Error('id is required');
     }
     return await prisma.friendship.update({
       where: { id: friendship.id },
@@ -46,13 +56,16 @@ export async function updateFriendship(friendship: FriendshipUpdateContent) {
   }
 }
 
-export async function deleteFriendship(id: number) {
+export async function deleteFriendship(id: number): Promise<Friendship> {
   return await prisma.friendship.delete({
     where: { id },
   });
 }
 
-export async function getFriendshipByPairId(id1: number, id2: number) {
+export async function getFriendshipByPairId(
+  id1: number,
+  id2: number,
+): Promise<Friendship | null> {
   try {
     const response = await prisma.friendship.findFirst({
       where: {
@@ -76,8 +89,8 @@ export async function getFriendshipByPairId(id1: number, id2: number) {
 
 export async function getFriendshipByPairUsername(
   username1: string,
-  username2: string
-) {
+  username2: string,
+): Promise<Friendship | null> {
   return await prisma.friendship.findFirst({
     where: {
       OR: [
@@ -104,15 +117,15 @@ export async function getFriendshipByPairUsername(
 
 export async function sendFriendshipRequest(
   requesterId: number,
-  requesteeId: number
-) {
+  requesteeId: number,
+): Promise<Friendship> {
   try {
     // Find if requestee has already sent a request to requester
     const friendship = await getFriendshipByPairId(requesteeId, requesterId);
     if (friendship) {
       if (friendship.status === FriendshipStatus.pending) {
         if (friendship.requesterId === requesterId) {
-          throw new Error("Friendship request already sent");
+          throw new Error('Friendship request already sent');
         }
         // Else then accept the request
         else {
@@ -124,7 +137,7 @@ export async function sendFriendshipRequest(
         }
       }
       if (friendship.status === FriendshipStatus.accepted) {
-        throw new Error("Friendship already exists");
+        throw new Error('Friendship already exists');
       }
       const response = await updateFriendship({
         id: friendship.id,
@@ -143,7 +156,10 @@ export async function sendFriendshipRequest(
   }
 }
 
-export async function deleteFriendshipByPairId(id1: number, id2: number) {
+export async function deleteFriendshipByPairId(
+  id1: number,
+  id2: number,
+): Promise<Prisma.BatchPayload> {
   const response = await prisma.friendship.deleteMany({
     where: {
       OR: [
@@ -161,7 +177,7 @@ export async function deleteFriendshipByPairId(id1: number, id2: number) {
   return response;
 }
 
-export async function getListOfFriends(userId: number) {
+export async function getListOfFriends(userId: number): Promise<FriendsList[]> {
   const response = await prisma.friendship.findMany({
     where: {
       OR: [

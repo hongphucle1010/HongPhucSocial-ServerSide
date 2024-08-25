@@ -72,6 +72,7 @@ app.use(
     } else
       res.status(500).json({
         message: 'Internal Server Error',
+        errors: [err.message],
       });
   },
 );

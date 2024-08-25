@@ -6,18 +6,21 @@ import {
   deleteProfile,
   getProfileByUsername,
 } from '../../model/Profile';
-import { FriendshipStatus } from '@prisma/client';
+import { FriendshipStatus, Profile } from '@prisma/client';
 import { getFriendshipByPairId } from '../../model/Friendship';
 import { ClientFriendshipStatus } from '../../model/Friendship/types';
 import { HttpStatus } from '../../lib/statusCode';
 import { HttpError } from '../../lib/error/HttpErrors';
 import ERROR_MESSAGES from '../../configs/errorMessages';
-import { ProfileRequestByUsername } from './types';
+import {
+  GetProfileByUsernameResponse,
+  ProfileRequestByUsername,
+} from './types';
 import expressAsyncHandler from 'express-async-handler';
 
 export const createProfileController = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const profile = await createProfile(req.body);
+    const profile: Profile = await createProfile(req.body);
     res.status(HttpStatus.Created).json(profile);
   },
 );
@@ -31,7 +34,7 @@ export const getProfileController = expressAsyncHandler(
         HttpStatus.BadRequest,
       );
     }
-    const profile = await getProfile(profileId);
+    const profile: Profile = await getProfile(profileId);
     res.status(HttpStatus.OK).json(profile);
   },
 );
@@ -42,7 +45,9 @@ export const getProfileByUsernameController = expressAsyncHandler(
     const profile = await getProfileByUsername(username);
     const currentUserId = parseInt(req.query.currentUserId);
 
-    const findFriendStatus = async () => {
+    const findFriendStatus = async (): Promise<
+      ClientFriendshipStatus | FriendshipStatus
+    > => {
       if (!currentUserId) {
         return FriendshipStatus.none;
       } else if (!profile.userId) {
@@ -69,7 +74,7 @@ export const getProfileByUsernameController = expressAsyncHandler(
 
     const friendStatus = await findFriendStatus();
 
-    const user = {
+    const user: GetProfileByUsernameResponse = {
       profile: profile,
       username: username,
       friendStatus: friendStatus,
@@ -87,7 +92,7 @@ export const updateProfileController = expressAsyncHandler(
         HttpStatus.BadRequest,
       );
     }
-    const profile = await updateProfile({ ...req.body, id: profileId });
+    const profile : Profile = await updateProfile({ ...req.body, id: profileId });
     res.status(HttpStatus.OK).json(profile);
   },
 );

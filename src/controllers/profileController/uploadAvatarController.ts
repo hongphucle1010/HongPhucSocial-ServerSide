@@ -13,6 +13,7 @@ import { HttpStatus } from '../../lib/statusCode';
 import SUCCESS_MESSAGES from '../../configs/successMessages';
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
+import { UploadAvatarResponse } from './types';
 
 const handleUploadAvatar = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {
@@ -63,10 +64,11 @@ const handleUploadAvatar = expressAsyncHandler(
         avatarUrl: blobUrl,
       });
 
-      res.status(HttpStatus.OK).json({
+      const response: UploadAvatarResponse = {
         message: SUCCESS_MESSAGES.profile.uploadAvatar,
         url: blobUrl,
-      });
+      };
+      res.status(HttpStatus.OK).json(response);
     }
   },
 );
@@ -75,22 +77,26 @@ export const uploadAvatarController = [
   handleUploadAvatar,
 ];
 
-export const deleteAvatarController = expressAsyncHandler(async (req: Request, res: Response): Promise<void> => {
-  const profile = await getProfileByUserId(req.user.id);
-  if (!profile) {
-    throw new HttpError(ERROR_MESSAGES.profile.notFound, HttpStatus.NotFound);
-  }
-  if (!profile.avatarUrl) {
-    throw new HttpError(
-      ERROR_MESSAGES.profile.noAvatarToDelete,
-      HttpStatus.BadRequest,
-    );
-  }
-  const blobName = extractBlobName(profile.avatarUrl);
-  await deleteBlob(blobName);
-  await updateProfile({
-    id: profile.id,
-    avatarUrl: null,
-  });
-  res.status(HttpStatus.OK).json({ message: SUCCESS_MESSAGES.profile.deleteAvatar });
-});
+export const deleteAvatarController = expressAsyncHandler(
+  async (req: Request, res: Response): Promise<void> => {
+    const profile = await getProfileByUserId(req.user.id);
+    if (!profile) {
+      throw new HttpError(ERROR_MESSAGES.profile.notFound, HttpStatus.NotFound);
+    }
+    if (!profile.avatarUrl) {
+      throw new HttpError(
+        ERROR_MESSAGES.profile.noAvatarToDelete,
+        HttpStatus.BadRequest,
+      );
+    }
+    const blobName = extractBlobName(profile.avatarUrl);
+    await deleteBlob(blobName);
+    await updateProfile({
+      id: profile.id,
+      avatarUrl: null,
+    });
+    res
+      .status(HttpStatus.OK)
+      .json({ message: SUCCESS_MESSAGES.profile.deleteAvatar });
+  },
+);

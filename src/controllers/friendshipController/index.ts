@@ -7,26 +7,18 @@ import {
 } from '../../model/Friendship';
 import { Request, Response } from 'express';
 import { ClientFriendshipStatus } from '../../model/Friendship/types';
-import { FriendshipRequest } from './types';
+import {
+  FriendshipRequest,
+  FriendsListResponse,
+  GetFriendshipResponse,
+  SendFriendshipRequestResponse,
+} from './types';
 import { HttpStatus } from '../../lib/statusCode';
 import { HttpError } from '../../lib/error/HttpErrors';
 import ERROR_MESSAGES from '../../configs/errorMessages';
 import SUCCESS_MESSAGES from '../../configs/successMessages';
 import expressAsyncHandler from 'express-async-handler';
 
-// export async function getFriendshipController(
-//   req: FriendshipRequest,
-//   res: Response,
-// ) {
-//   const id1 = parseInt(req.query.id1);
-//   const id2 = parseInt(req.query.id2);
-
-//   const friendship = await getFriendshipByPairId(id1, id2);
-//   const friendshipStatus = friendship
-//     ? friendship.status
-//     : FriendshipStatus.none;
-//   res.status(HttpStatus.OK).json({ status: friendshipStatus });
-// }
 export const getFriendshipController = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const id1 = parseInt(req.query.id1 as string);
@@ -36,7 +28,8 @@ export const getFriendshipController = expressAsyncHandler(
     const friendshipStatus = friendship
       ? friendship.status
       : FriendshipStatus.none;
-    res.status(HttpStatus.OK).json({ status: friendshipStatus });
+    const response: GetFriendshipResponse = { status: friendshipStatus };
+    res.status(HttpStatus.OK).json(response);
   },
 );
 
@@ -50,18 +43,21 @@ export const sendFriendshipRequestController = expressAsyncHandler(
         HttpStatus.BadRequest,
       );
     }
-    const response = await sendFriendshipRequest(requesterId, requesteeId);
-    if (response.status === FriendshipStatus.pending) {
-      res.status(HttpStatus.OK).json({
-        message: SUCCESS_MESSAGES.friendship.friendshipRequestSent,
-        status: ClientFriendshipStatus.pendingToBeAccepted,
-      });
-    } else {
-      res.status(HttpStatus.OK).json({
-        message: SUCCESS_MESSAGES.friendship.acceptedFriendshipRequest,
-        status: response.status,
-      });
-    }
+    const requestResult = await sendFriendshipRequest(requesterId, requesteeId);
+
+    const response: SendFriendshipRequestResponse =
+      requestResult.status === FriendshipStatus.pending
+        ? {
+            // Pending status
+            message: SUCCESS_MESSAGES.friendship.friendshipRequestSent,
+            status: ClientFriendshipStatus.pendingToBeAccepted,
+          }
+        : {
+            // Accepted status
+            message: SUCCESS_MESSAGES.friendship.acceptedFriendshipRequest,
+            status: requestResult.status,
+          };
+    res.status(HttpStatus.OK).json(response);
   },
 );
 
@@ -71,12 +67,11 @@ export const deleteFriendshipController = expressAsyncHandler(
     const id2 = parseInt(req.body.id);
 
     const response = await deleteFriendshipByPairId(id1, id2);
-    res
-      .status(HttpStatus.OK)
-      .json({
-        message: SUCCESS_MESSAGES.friendship.friendshipDeleted,
-        response,
-      });
+    const responseWithMessage: MyResponse.ResponseWithMessage = {
+      message: SUCCESS_MESSAGES.friendship.friendshipDeleted,
+      response,
+    };
+    res.status(HttpStatus.OK).json(responseWithMessage);
   },
 );
 
@@ -85,7 +80,7 @@ export const getListOfFriendsController = expressAsyncHandler(
     const id = req.user.id;
 
     const friends = await getListOfFriends(id);
-    const friendsList = friends.map((friend) => {
+    const friendsList = friends.map((friend): FriendsListResponse => {
       if (friend.requesteeId === id)
         return { userId: friend.requesterId, ...friend.requester };
       else return { userId: friend.requesteeId, ...friend.requestee };

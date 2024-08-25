@@ -3,7 +3,7 @@ import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { JWT_SECRET } from '../constants';
 import { PassportJwtPayload } from './types';
 
-export const initializeJwtStrategy = () => {
+export const initializeJwtStrategy = (): void => {
   passport.use(
     'jwt',
     new JwtStrategy(

@@ -9,6 +9,7 @@ import { HttpStatus } from '../../lib/statusCode';
 import { IVerifyOptions } from 'passport-local';
 import ERROR_MESSAGES from '../../configs/errorMessages';
 import expressAsyncHandler from 'express-async-handler';
+import { LogInResponse } from './types';
 
 export function generateToken(user: User) {
   const userTokenized: UserTokenized = { id: user.id, username: user.username };
@@ -57,9 +58,10 @@ export const handleLogin = expressAsyncHandler(
         req.login(user, { session: false }, async (error) => {
           if (error) return next(error);
 
-          const token = generateToken(user);
-          const { password, ...userWithoutPassword } = user;
-          res.json({ token, user: userWithoutPassword });
+          const token = generateToken(user); // generate token
+          const { password, ...userWithoutPassword } = user; // remove password from user object
+          const response: LogInResponse = { token, user: userWithoutPassword };
+          res.json(response);
         });
       },
     )(req, res, next);
