@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body } from 'express-validator';
 
 export const castToIntMiddleware = (keyName: string) => body(keyName).toInt();
 export const castToStringMiddleware = (keyName: string) =>

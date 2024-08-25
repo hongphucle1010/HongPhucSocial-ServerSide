@@ -13,87 +13,95 @@ import { HttpStatus } from '../../lib/statusCode';
 import { HttpError } from '../../lib/error/HttpErrors';
 import ERROR_MESSAGES from '../../configs/errorMessages';
 import { ProfileRequestByUsername } from './types';
+import expressAsyncHandler from 'express-async-handler';
 
-export async function createProfileController(req: Request, res: Response) {
-  const profile = await createProfile(req.body);
-  res.status(HttpStatus.Created).json(profile);
-}
+export const createProfileController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const profile = await createProfile(req.body);
+    res.status(HttpStatus.Created).json(profile);
+  },
+);
 
-export async function getProfileController(req: Request, res: Response) {
-  const profileId = parseInt(req.params.id);
-  if (isNaN(profileId)) {
-    throw new HttpError(
-      ERROR_MESSAGES.profile.invalidId,
-      HttpStatus.BadRequest,
-    );
-  }
-  const profile = await getProfile(profileId);
-  res.status(HttpStatus.OK).json(profile);
-}
-
-export async function getProfileByUsernameController(
-  req: ProfileRequestByUsername,
-  res: Response,
-) {
-  const username = req.params.username;
-  const profile = await getProfileByUsername(username);
-  const currentUserId = parseInt(req.query.currentUserId);
-
-  const findFriendStatus = async () => {
-    if (!currentUserId) {
-      return FriendshipStatus.none;
-    } else if (!profile.userId) {
-      return FriendshipStatus.none;
-    } else if (profile.userId === req.user.id) {
-      return FriendshipStatus.none;
-    } else {
-      // Find friendship status
-      const friendshipStatus = await getFriendshipByPairId(
-        currentUserId,
-        profile.userId,
+export const getProfileController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) {
+      throw new HttpError(
+        ERROR_MESSAGES.profile.invalidId,
+        HttpStatus.BadRequest,
       );
-      if (!friendshipStatus?.status) {
-        return FriendshipStatus.none;
-      }
-      if (friendshipStatus.status === FriendshipStatus.pending) {
-        if (friendshipStatus.requesterId === currentUserId) {
-          return ClientFriendshipStatus.pendingToBeAccepted;
-        } else return ClientFriendshipStatus.pendingToAccept;
-      }
-      return friendshipStatus.status;
     }
-  };
+    const profile = await getProfile(profileId);
+    res.status(HttpStatus.OK).json(profile);
+  },
+);
 
-  const friendStatus = await findFriendStatus();
+export const getProfileByUsernameController = expressAsyncHandler(
+  async (req: ProfileRequestByUsername, res: Response) => {
+    const username = req.params.username;
+    const profile = await getProfileByUsername(username);
+    const currentUserId = parseInt(req.query.currentUserId);
 
-  const user = {
-    profile: profile,
-    username: username,
-    friendStatus: friendStatus,
-  };
-  res.status(HttpStatus.OK).json(user);
-}
+    const findFriendStatus = async () => {
+      if (!currentUserId) {
+        return FriendshipStatus.none;
+      } else if (!profile.userId) {
+        return FriendshipStatus.none;
+      } else if (profile.userId === req.user.id) {
+        return FriendshipStatus.none;
+      } else {
+        // Find friendship status
+        const friendshipStatus = await getFriendshipByPairId(
+          currentUserId,
+          profile.userId,
+        );
+        if (!friendshipStatus?.status) {
+          return FriendshipStatus.none;
+        }
+        if (friendshipStatus.status === FriendshipStatus.pending) {
+          if (friendshipStatus.requesterId === currentUserId) {
+            return ClientFriendshipStatus.pendingToBeAccepted;
+          } else return ClientFriendshipStatus.pendingToAccept;
+        }
+        return friendshipStatus.status;
+      }
+    };
 
-export async function updateProfileController(req: Request, res: Response) {
-  const profileId = parseInt(req.params.id);
-  if (isNaN(profileId)) {
-    throw new HttpError(
-      ERROR_MESSAGES.profile.invalidId,
-      HttpStatus.BadRequest,
-    );
-  }
-  const profile = await updateProfile({ ...req.body, id: profileId });
-  res.status(HttpStatus.OK).json(profile);
-}
+    const friendStatus = await findFriendStatus();
 
-export async function deleteProfileController(req: Request, res: Response) {
-  const profileId = parseInt(req.params.id);
-  if (isNaN(profileId)) {
-    throw new HttpError(
-      ERROR_MESSAGES.profile.invalidId,
-      HttpStatus.BadRequest,
-    );
-  }
-  await deleteProfile(profileId);
-  res.status(HttpStatus.NoContent).send();
-}
+    const user = {
+      profile: profile,
+      username: username,
+      friendStatus: friendStatus,
+    };
+    res.status(HttpStatus.OK).json(user);
+  },
+);
+
+export const updateProfileController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) {
+      throw new HttpError(
+        ERROR_MESSAGES.profile.invalidId,
+        HttpStatus.BadRequest,
+      );
+    }
+    const profile = await updateProfile({ ...req.body, id: profileId });
+    res.status(HttpStatus.OK).json(profile);
+  },
+);
+
+export const deleteProfileController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const profileId = parseInt(req.params.id);
+    if (isNaN(profileId)) {
+      throw new HttpError(
+        ERROR_MESSAGES.profile.invalidId,
+        HttpStatus.BadRequest,
+      );
+    }
+    await deleteProfile(profileId);
+    res.status(HttpStatus.NoContent).send();
+  },
+);

@@ -56,7 +56,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use('/api', routes);
 app.use('/fix', fix);
-app.use('/*', (req, res) => {
+app.use('/*', (req, res, next) => {
   res.json({
     message: 'Error: Route not found',
   });
@@ -69,10 +69,10 @@ app.use(
         message: err.message,
         errors: err.errors,
       });
-    }
-    res.status(500).json({
-      message: 'Internal Server Error',
-    });
+    } else
+      res.status(500).json({
+        message: 'Internal Server Error',
+      });
   },
 );
 

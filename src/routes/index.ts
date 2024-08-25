@@ -10,7 +10,7 @@ routes.get("/experiment", async (req, res) => {
 
 routes.use("/v1", v1);
 
-routes.get("/*", (req, res) => {
+routes.get("/*", (req, res, next) => {
   res.json({
     message: "Error: Route not found",
   });
