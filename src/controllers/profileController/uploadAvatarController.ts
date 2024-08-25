@@ -1,82 +1,94 @@
-import uploadMulter from "../../helper/multer";
+import uploadMulter from '../../helper/multer';
 import {
   deleteBlob,
   extractBlobName,
   uploadBlob,
-} from "../../helper/azure/storageBlob";
-import { imageResize } from "../../helper/imageResize";
-import path from "path";
-import { getProfileByUserId, updateProfile } from "../../model/Profile";
+} from '../../helper/azure/storageBlob';
+import { imageResize } from '../../helper/imageResize';
+import path from 'path';
+import { getProfileByUserId, updateProfile } from '../../model/Profile';
+import { HttpError } from '../../lib/error/HttpErrors';
+import ERROR_MESSAGES from '../../configs/errorMessages';
+import { HttpStatus } from '../../lib/statusCode';
+import SUCCESS_MESSAGES from '../../configs/successMessages';
+import { Request, Response } from 'express';
 
-async function handleUploadAvatar(req: any, res: any) {
+async function handleUploadAvatar(req: Request, res: Response) {
   if (!req.file) {
-    return res.status(400).json({ message: "Please upload a file." });
+    throw new HttpError(
+      ERROR_MESSAGES.profile.missingFile,
+      HttpStatus.BadRequest,
+    );
   }
 
-  if (!req.file.mimetype.startsWith("image")) {
-    return res.status(400).json({ message: "Please upload an image file." });
+  if (!req.file.mimetype.startsWith('image')) {
+    throw new HttpError(
+      ERROR_MESSAGES.profile.invalidFileType,
+      HttpStatus.BadRequest,
+    );
   }
 
   const profile = await getProfileByUserId(req.user.id);
 
   const oldAvatarUrl = profile?.avatarUrl;
-  console.log("Old avatar: ", oldAvatarUrl);
   try {
     if (oldAvatarUrl) {
       const blobName = extractBlobName(oldAvatarUrl);
       await deleteBlob(blobName);
     }
   } catch (error: any) {
-    console.log("Error deleting old avatar: ", error.message);
-    return res.status(500).json({ message: error.message });
+    console.error('Error deleting old avatar: ', error.message);
+    throw new HttpError(error.message, HttpStatus.InternalServerError);
   } finally {
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      throw new HttpError(ERROR_MESSAGES.profile.notFound, HttpStatus.NotFound);
     }
 
-    try {
-      const blobName = Date.now() + path.extname(req.file.originalname);
-      const buffer = await imageResize(req.file.buffer, 200, 200);
+    const blobName = Date.now() + path.extname(req.file.originalname);
+    const buffer = await imageResize(
+      req.file.buffer,
+      HttpStatus.OK,
+      HttpStatus.OK,
+    );
 
-      const blobUrl = await uploadBlob(blobName, buffer);
+    const blobUrl = await uploadBlob(blobName, buffer);
 
-      await updateProfile({
-        id: profile.id,
-        avatarUrl: blobUrl,
-      });
+    await updateProfile({
+      id: profile.id,
+      avatarUrl: blobUrl,
+    });
 
-      return res.status(200).json({
-        message: "File uploaded successfully.",
-        url: blobUrl,
-      });
-    } catch (error: any) {
-      return res.status(500).json({ message: error.message });
-    }
+    return res.status(HttpStatus.OK).json({
+      message: SUCCESS_MESSAGES.profile.uploadAvatar,
+      url: blobUrl,
+    });
   }
 }
 
 export const uploadAvatarController = [
-  uploadMulter.single("file"),
+  uploadMulter.single('file'),
   handleUploadAvatar,
 ];
 
-export async function deleteAvatarController(req: any, res: any) {
-  try {
-    const profile = await getProfileByUserId(req.user.id);
-    if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
-    }
-    if (!profile.avatarUrl) {
-      return res.status(400).json({ message: "No avatar to delete" });
-    }
-    const blobName = extractBlobName(profile.avatarUrl);
-    await deleteBlob(blobName);
-    await updateProfile({
-      id: profile.id,
-      avatarUrl: null,
-    });
-    return res.status(200).json({ message: "File deleted successfully." });
-  } catch (error: any) {
-    return res.status(500).json({ message: error.message });
+export async function deleteAvatarController(req: Request, res: Response) {
+  const profile = await getProfileByUserId(req.user.id);
+  if (!profile) {
+    throw new HttpError(ERROR_MESSAGES.profile.notFound, HttpStatus.NotFound);
   }
+  if (!profile.avatarUrl) {
+    // return res.status(400).json({ message: 'No avatar to delete' });
+    throw new HttpError(
+      ERROR_MESSAGES.profile.noAvatarToDelete,
+      HttpStatus.BadRequest,
+    );
+  }
+  const blobName = extractBlobName(profile.avatarUrl);
+  await deleteBlob(blobName);
+  await updateProfile({
+    id: profile.id,
+    avatarUrl: null,
+  });
+  return res
+    .status(HttpStatus.OK)
+    .json({ message: SUCCESS_MESSAGES.profile.deleteAvatar });
 }

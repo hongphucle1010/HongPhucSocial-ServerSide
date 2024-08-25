@@ -1,102 +1,102 @@
-import { NextFunction, Response } from "express";
+import { NextFunction, Request, Response } from 'express';
 import {
   createMessage,
   getMessageByPairId,
   getMessageByPairUsername,
   getMessageList,
-} from "../../model/Message";
-import { body } from "express-validator";
-import { castToIntMiddleware, normalizeStringMiddleware } from "../validators";
-import { normalize } from "path";
-import { getProfileByUserId } from "../../model/Profile";
+} from '../../model/Message';
+import { castToIntMiddleware, normalizeStringMiddleware } from '../validators';
+import { getProfileByUserId } from '../../model/Profile';
+import { HttpError } from '../../lib/error/HttpErrors';
+import { HttpStatus } from '../../lib/statusCode';
+import ERROR_MESSAGES from '../../configs/errorMessages';
 
-export async function getMessageByIdController(req: any, res: Response) {
+export async function getMessageByIdController(req: Request, res: Response) {
   const id = parseInt(req.params.id);
   const myId = req.user.id;
 
   if (!id) {
-    return res.status(400).json({ message: "id is required" });
+    throw new HttpError('id is required', HttpStatus.BadRequest);
   }
 
   if (isNaN(id)) {
-    return res.status(400).json({ message: "Invalid id" });
+    throw new HttpError('Invalid id', HttpStatus.BadRequest);
   }
 
   if (!myId) {
-    return res.status(400).json({ message: "Invalid user" });
+    throw new HttpError('Invalid user', HttpStatus.BadRequest);
   }
 
-  try {
-    const response = await getMessageByPairId(myId, id);
-    const userProfile = await getProfileByUserId(id);
-    res.status(200).json({ messageList: response, userProfile });
-  } catch (e: any) {
-    res.status(400).json({ message: e.message });
-  }
+  const response = await getMessageByPairId(myId, id);
+  const userProfile = await getProfileByUserId(id);
+  res.status(HttpStatus.OK).json({ messageList: response, userProfile });
 }
 
-export async function getMessageByUsernameController(req: any, res: Response) {
+export async function getMessageByUsernameController(
+  req: Request,
+  res: Response,
+) {
   const username = req.params.username;
   const myUsername = req.user.username;
 
   if (!username) {
-    return res.status(400).json({ message: "username is required" });
+    throw new HttpError(
+      ERROR_MESSAGES.message.missingUsername,
+      HttpStatus.BadRequest,
+    );
   }
 
   if (!myUsername) {
-    return res.status(400).json({ message: "Invalid user" });
+    throw new HttpError(
+      ERROR_MESSAGES.other.invalidUser,
+      HttpStatus.BadRequest,
+    );
   }
 
-  try {
-    const response = await getMessageByPairUsername(myUsername, username);
-    res.status(200).json({ messageList: response });
-  } catch (e: any) {
-    res.status(400).json({ message: e.message });
-  }
+  const response = await getMessageByPairUsername(myUsername, username);
+  res.status(HttpStatus.OK).json({ messageList: response });
 }
 
 export const sendMessageController = [
-  castToIntMiddleware("receiverId"),
-  normalizeStringMiddleware("message"),
+  castToIntMiddleware('receiverId'),
+  normalizeStringMiddleware('message'),
   async function (req: any, res: Response) {
     const { receiverId, message } = req.body;
     const senderId = req.user.id;
 
     if (!receiverId || !message) {
-      return res
-        .status(400)
-        .json({ message: "receiverId and message is required" });
+      throw new HttpError(
+        ERROR_MESSAGES.message.missingReceiverIdAndMessage,
+        HttpStatus.BadRequest,
+      );
     }
 
     if (!senderId) {
-      return res.status(400).json({ message: "Invalid user" });
+      throw new HttpError(
+        ERROR_MESSAGES.other.invalidUser,
+        HttpStatus.BadRequest,
+      );
     }
 
-    try {
-      const response = await createMessage({
-        senderId,
-        receiverId,
-        content: message,
-      });
-      res.status(200).json(response);
-    } catch (e: any) {
-      res.status(400).json({ message: e.message });
-    }
+    const response = await createMessage({
+      senderId,
+      receiverId,
+      content: message,
+    });
+    res.status(HttpStatus.OK).json(response);
   },
 ];
 
-export async function getMessageListController(req: any, res: Response) {
+export async function getMessageListController(req: Request, res: Response) {
   const myId = req.user.id;
 
   if (!myId) {
-    return res.status(400).json({ message: "Invalid user" });
+    throw new HttpError(
+      ERROR_MESSAGES.other.invalidUser,
+      HttpStatus.BadRequest,
+    );
   }
 
-  try {
-    const response = await getMessageList(myId);
-    res.status(200).json(response);
-  } catch (e: any) {
-    console.log(e);
-    res.status(400).json({ message: e.message });
-  }
+  const response = await getMessageList(myId);
+  res.status(HttpStatus.OK).json(response);
 }

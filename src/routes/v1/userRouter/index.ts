@@ -2,10 +2,8 @@
 import express from "express";
 import {
   createUserController,
-  getUserByIdController,
   getUserController,
   updatePasswordController,
-  updateUserController,
   updateUserWithProfileController,
 } from "../../../controllers/userController";
 import {

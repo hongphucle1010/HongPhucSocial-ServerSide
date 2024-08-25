@@ -1,14 +1,15 @@
-import express, { NextFunction, Request, Response } from "express";
-import { createServer } from "http";
-import path from "path";
-import { Server } from "socket.io";
-import { routes } from "./routes";
-import chatSocket from "./sockets/chat";
-import initializePassport from "./passport";
-import * as dotenv from "dotenv";
-import passport from "passport";
-import cors from "cors";
-import fix from "./fix";
+import express, { NextFunction, Request, Response } from 'express';
+import { createServer } from 'http';
+import path from 'path';
+import { Server } from 'socket.io';
+import { routes } from './routes';
+import chatSocket from './sockets/chat';
+import initializePassport from './passport';
+import * as dotenv from 'dotenv';
+import passport from 'passport';
+import cors from 'cors';
+import fix from './fix';
+import { HttpError } from './lib/error/HttpErrors';
 
 dotenv.config();
 
@@ -50,23 +51,32 @@ const port = process.env.PORT || 3000;
 initializePassport();
 app.use(cors());
 app.use(passport.initialize());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/api", routes);
-app.use("/fix", fix);
-app.use("/*", (req, res) => {
+app.use('/api', routes);
+app.use('/fix', fix);
+app.use('/*', (req, res) => {
   res.json({
-    message: "Error: Route not found",
+    message: 'Error: Route not found',
   });
 });
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something broke!" });
-});
+app.use(
+  (err: HttpError | Error, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof HttpError) {
+      res.status(err.statusCode).json({
+        message: err.message,
+        errors: err.errors,
+      });
+    }
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  },
+);
 
-io.on("connection", (socket) => {
+io.on('connection', (socket) => {
   try {
     chatSocket(socket, io);
   } catch (error) {

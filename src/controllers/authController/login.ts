@@ -3,12 +3,11 @@ import passport from 'passport';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../../constants';
 import { NextFunction, request, Request, Response } from 'express';
-import {
-  PassportJwtPayload,
-  PassportMessage,
-  UserTokenized,
-} from '../../passport/types';
-import { HttpError, HttpStatus } from '../../lib/error/HttpError';
+import { PassportJwtPayload, UserTokenized } from '../../passport/types';
+import { HttpError } from '../../lib/error/HttpErrors';
+import { HttpStatus } from '../../lib/statusCode';
+import { IVerifyOptions } from 'passport-local';
+import ERROR_MESSAGES from '../../configs/errorMessages';
 
 export function generateToken(user: User) {
   const userTokenized: UserTokenized = { id: user.id, username: user.username };
@@ -19,7 +18,10 @@ export function generateToken(user: User) {
 
 export function blockLoggedIn(req: Request, res: Response, next: NextFunction) {
   if (req.isAuthenticated())
-    throw new HttpError('Already authenticated', HttpStatus.BadRequest);
+    throw new HttpError(
+      ERROR_MESSAGES.auth.logIn.alreadyLoggedIn,
+      HttpStatus.BadRequest,
+    );
   next();
 }
 
@@ -29,7 +31,10 @@ export function blockNotLoggedIn(
   next: NextFunction,
 ) {
   if (!req.isAuthenticated())
-    throw new HttpError('Not authenticated', HttpStatus.Unauthorized);
+    throw new HttpError(
+      ERROR_MESSAGES.auth.logIn.notLoggedIn,
+      HttpStatus.Unauthorized,
+    );
 
   next();
 }
@@ -41,62 +46,23 @@ export async function handleLogin(
 ) {
   passport.authenticate(
     'login',
-    async (err: Error, user: User, info: PassportMessage) => {
-      try {
-        if (err) {
-          const error = new Error('An error occurred.');
-          return next(error);
-        }
-
-        if (!user) {
-          return res.status(401).json({ message: info.message });
-        }
-        req.login(user, { session: false }, async (error) => {
-          if (error) return next(error);
-
-          const token = generateToken(user);
-          const { password, ...userWithoutPassword } = user;
-          return res.json({ token, user: userWithoutPassword });
-        });
-      } catch (error) {
-        return next(error);
+    async (err: Error, user: User, info: IVerifyOptions) => {
+      if (err) {
+        throw new HttpError(err.message, HttpStatus.InternalServerError);
       }
+
+      if (!user) {
+        throw new HttpError(info.message, HttpStatus.Unauthorized);
+      }
+      req.login(user, { session: false }, async (error) => {
+        if (error) return next(error);
+
+        const token = generateToken(user);
+        const { password, ...userWithoutPassword } = user;
+        res.json({ token, user: userWithoutPassword });
+      });
     },
   )(req, res, next);
-}
-
-/**
- * @deprecated
- */
-export async function checkAndDecodeToken(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  try {
-    const bearerHeader = req.headers['authorization'];
-    if (!bearerHeader) {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    const bearer = bearerHeader.split(' ');
-    if (bearer.length !== 2 || bearer[0] !== 'Bearer') {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-
-    const token = bearer[1];
-
-    const secret = JWT_SECRET;
-
-    const decode = jwt.verify(token, secret);
-
-    if (!decode || typeof decode !== 'object') {
-      return res.status(401).json({ message: 'Unauthorized' });
-    }
-    res.status(200).json(decode);
-  } catch (e) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
 }
 
 // Authentication, if not successful, call the next middleware
@@ -105,26 +71,22 @@ export async function isLoginAuth(
   res: Response,
   next: NextFunction,
 ) {
-  try {
-    await passport.authenticate(
-      'jwt',
-      { session: false },
-      (err: Error, user: PassportJwtPayload, info?: PassportMessage) => {
-        if (err) {
-          return next(err);
-        }
+  await passport.authenticate(
+    'jwt',
+    { session: false },
+    (err: Error, user: PassportJwtPayload, info?: IVerifyOptions) => {
+      if (err) {
+        return next(err);
+      }
 
-        if (!user) {
-          return next();
-        }
-        req.user = user;
+      if (!user) {
+        return next();
+      }
+      req.user = user;
 
-        next();
-      },
-    )(req, res, next);
-  } catch (e) {
-    next(e);
-  }
+      next();
+    },
+  )(req, res, next);
 }
 
 export const loginController = [blockLoggedIn, handleLogin];

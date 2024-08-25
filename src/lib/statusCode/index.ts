@@ -1,16 +1,30 @@
-class HttpError extends Error {
-  statusCode: HttpStatus;
+export const HttpStatusCode: { [key: number]: string } = {
+  100: 'Continue',
+  101: 'SwitchingProtocols',
+  102: 'Processing',
+  103: 'EarlyHints',
 
-  constructor(message: string, statusCode: HttpStatus) {
-    super(message);
-    this.statusCode = statusCode;
-    this.name = HttpStatusCode[statusCode];
-  }
-}
+  200: 'OK',
+  201: 'Created',
+  202: 'Accepted',
+  203: 'NonAuthoritativeInformation',
+  204: 'NoContent',
+  205: 'ResetContent',
+  206: 'PartialContent',
+  207: 'MultiStatus',
+  208: 'AlreadyReported',
+  226: 'IMUsed',
 
-export { HttpError };
+  300: 'MultipleChoices',
+  301: 'MovedPermanently',
+  302: 'Found',
+  303: 'SeeOther',
+  304: 'NotModified',
+  305: 'UseProxy',
+  306: 'SwitchProxy',
+  307: 'TemporaryRedirect',
+  308: 'PermanentRedirect',
 
-const HttpStatusCode: { [key: number]: string } = {
   400: 'BadRequest',
   401: 'Unauthorized',
   403: 'Forbidden',
@@ -52,6 +66,32 @@ const HttpStatusCode: { [key: number]: string } = {
 };
 
 export const enum HttpStatus {
+  Continue = 100,
+  SwitchingProtocols = 101,
+  Processing = 102,
+  EarlyHints = 103,
+
+  OK = 200,
+  Created = 201,
+  Accepted = 202,
+  NonAuthoritativeInformation = 203,
+  NoContent = 204,
+  ResetContent = 205,
+  PartialContent = 206,
+  MultiStatus = 207,
+  AlreadyReported = 208,
+  IMUsed = 226,
+
+  MultipleChoices = 300,
+  MovedPermanently = 301,
+  Found = 302,
+  SeeOther = 303,
+  NotModified = 304,
+  UseProxy = 305,
+  SwitchProxy = 306,
+  TemporaryRedirect = 307,
+  PermanentRedirect = 308,
+
   BadRequest = 400,
   Unauthorized = 401,
   Forbidden = 403,

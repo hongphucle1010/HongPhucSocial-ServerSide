@@ -2,9 +2,6 @@
 import express from "express";
 import {
   createProfileController,
-  getProfileController,
-  updateProfileController,
-  deleteProfileController,
   getProfileByUsernameController,
 } from "../../../controllers/profileController";
 import {

@@ -6,7 +6,6 @@ import { profileRouter } from './profileRouter';
 import { postRouter } from './postRouter';
 import { authRouter } from './userRouter/auth';
 import {
-  blockNotLoggedIn,
   blockNotLoggedInMiddleware,
   isLoginAuth,
 } from '../../controllers/authController/login';

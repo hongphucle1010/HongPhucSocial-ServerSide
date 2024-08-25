@@ -1,9 +1,5 @@
 import { JwtPayload } from 'jsonwebtoken';
 
-export interface PassportMessage {
-  message: string;
-}
-
 export interface UserTokenized {
   id: number;
   username: string;

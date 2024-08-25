@@ -1,0 +1,17 @@
+import AUTHENTICATION_SUCCESS_MESSAGES from './auth';
+import FRIENDSHIP_SUCCESS_MESSAGES from './friendship';
+import MESSAGE_SUCCESS_MESSAGES from './message';
+import POST_SUCCESS_MESSAGES from './post';
+import PROFILE_SUCCESS_MESSAGES from './profile';
+import USER_SUCCESS_MESSAGES from './user';
+
+const SUCCESS_MESSAGES = {
+  auth: AUTHENTICATION_SUCCESS_MESSAGES,
+  friendship: FRIENDSHIP_SUCCESS_MESSAGES,
+  message: MESSAGE_SUCCESS_MESSAGES,
+  post: POST_SUCCESS_MESSAGES,
+  profile: PROFILE_SUCCESS_MESSAGES,
+  user: USER_SUCCESS_MESSAGES,
+};
+
+export default SUCCESS_MESSAGES;
