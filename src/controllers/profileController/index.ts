@@ -52,8 +52,6 @@ export const getProfileByUsernameController = expressAsyncHandler(
         return FriendshipStatus.none;
       } else if (!profile.userId) {
         return FriendshipStatus.none;
-      } else if (profile.userId === req.user.id) {
-        return FriendshipStatus.none;
       } else {
         // Find friendship status
         const friendshipStatus = await getFriendshipByPairId(
@@ -92,7 +90,10 @@ export const updateProfileController = expressAsyncHandler(
         HttpStatus.BadRequest,
       );
     }
-    const profile : Profile = await updateProfile({ ...req.body, id: profileId });
+    const profile: Profile = await updateProfile({
+      ...req.body,
+      id: profileId,
+    });
     res.status(HttpStatus.OK).json(profile);
   },
 );

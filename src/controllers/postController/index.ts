@@ -13,7 +13,7 @@ import { Post } from '@prisma/client';
 
 export const createPostController = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    const post = await createPost(req.body);
+    const post: Post = await createPost(req.body);
     res.status(HttpStatus.Created).json(post);
   },
 );

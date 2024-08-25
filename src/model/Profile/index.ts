@@ -1,6 +1,10 @@
 import { Profile } from '@prisma/client';
 import prisma from '../../client';
-import { ProfileCreateContent, ProfileUpdateContent } from './types';
+import {
+  GetProfileResponse,
+  ProfileCreateContent,
+  ProfileUpdateContent,
+} from './types';
 
 export async function createProfile(
   profile: ProfileCreateContent,
@@ -35,7 +39,7 @@ export async function getProfile(id: number): Promise<Profile | null> {
 
 export async function getProfileByUserId(
   userId: number,
-): Promise<Profile | null> {
+): Promise<GetProfileResponse | null> {
   return await prisma.profile.findFirst({
     where: { userId },
     select: {

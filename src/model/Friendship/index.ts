@@ -67,6 +67,7 @@ export async function getFriendshipByPairId(
   id2: number,
 ): Promise<Friendship | null> {
   try {
+    console.log(id1, id2);
     const response = await prisma.friendship.findFirst({
       where: {
         OR: [
@@ -81,6 +82,7 @@ export async function getFriendshipByPairId(
         ],
       },
     });
+    console.log(response);
     return response;
   } catch (e: any) {
     return null;

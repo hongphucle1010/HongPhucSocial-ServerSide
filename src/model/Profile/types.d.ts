@@ -1,3 +1,5 @@
+import { Profile } from '@prisma/client';
+
 export interface ProfileCreateContent {
   firstName: string | null;
   lastName: string | null;
@@ -12,4 +14,10 @@ export interface ProfileUpdateContent {
   lastName?: string | null;
   bio?: string | null;
   avatarUrl?: string | null;
+}
+
+export interface GetProfileResponse extends Profile {
+  user: {
+    username: string;
+  };
 }

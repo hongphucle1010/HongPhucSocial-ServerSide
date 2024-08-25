@@ -1,9 +1,8 @@
+import { Message } from '@prisma/client';
 import prisma from '../../client';
 import { MessageContent, MessageListElement } from './types';
 
-export async function createMessage(
-  message: MessageContent,
-): Promise<MessageContent> {
+export async function createMessage(message: MessageContent): Promise<Message> {
   if (!message.senderId || !message.receiverId || !message.content) {
     throw new Error('Missing required fields');
   }
@@ -19,9 +18,7 @@ export async function createMessage(
   }
 }
 
-export async function getMessageById(
-  id: number,
-): Promise<MessageContent | null> {
+export async function getMessageById(id: number): Promise<Message | null> {
   return await prisma.message.findUnique({
     where: { id },
   });
@@ -36,7 +33,7 @@ export async function deleteMessage(id: number): Promise<MessageContent> {
 export async function getMessageByPairId(
   currentId: number,
   otherId: number,
-): Promise<MessageContent[]> {
+): Promise<Message[]> {
   return await prisma.message.findMany({
     where: {
       OR: [
@@ -59,7 +56,7 @@ export async function getMessageByPairId(
 export async function getMessageByPairUsername(
   currentUsername: string,
   otherUsername: string,
-): Promise<MessageContent[]> {
+): Promise<Message[]> {
   return await prisma.message.findMany({
     where: {
       OR: [
